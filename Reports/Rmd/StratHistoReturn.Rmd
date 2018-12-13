@@ -1,0 +1,183 @@
+---
+title: "Historical Returns"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(plotly)
+library(fmsb)
+library(data.table)
+
+load("database.RData")
+
+source("prod-V-0.9/InitFundData.R")
+source("BackTesting.R")
+
+```
+
+
+
+test graphs
+=======================================================================
+
+
+columns {.sidebar}
+-----------------------------------------------------------------------
+
+Please choose security to be displayed
+
+```{r}
+selectInput("Ticker", label = "Select Ticker", 
+            choices = unique(database$Ticker), 
+            selected = unique(database$Ticker)[1])
+```
+
+
+outputs 
+-----------------------------------------------------------------------
+
+Row {data.height=500}
+-----------------------------------------------------------------------
+
+### Rating Abs.Ret.YTD {.no-padding}
+
+```{r}
+db <- reactive({
+    database[input$Ticker, .(Date, Adj_Px_Last)][, ':=' (Rsi5=   RSI(Adj_Px_Last, n=5,  maType="EMA", wilder=TRUE),
+														 Rsi9=   RSI(Adj_Px_Last, n=9,  maType="EMA", wilder=TRUE),
+														 Rsi14=  RSI(Adj_Px_Last, n=14, maType="EMA", wilder=TRUE),
+														 Rsi20=  RSI(Adj_Px_Last, n=20, maType="EMA", wilder=TRUE))]
+
+})
+
+renderPlot({
+    p6 <-  # plot line & smooth Adj_Px_Last
+        ggplot(db(), aes(Date, Adj_Px_Last)) +
+        geom_line() +
+        geom_smooth() +
+        labs(title= "AAPL US Equity")
+
+    p7.1 <-  # Plot RSI 5/9/14/20
+        ggplot(db(), aes(Date, Rsi14)) +
+        geom_line() +
+        geom_smooth() +
+        geom_hline(aes(yintercept= quantile(Rsi14, 0.9, na.rm= TRUE))) +
+        geom_hline(aes(yintercept= quantile(Rsi14, 0.1, na.rm= TRUE))) +
+        labs(y="Rsi 14")
+
+    p7.2 <-  # Plot RSI 5/9/14/20
+        ggplot(db(), aes(Date, Rsi5)) +
+        geom_line() +
+        geom_smooth() +
+        geom_hline(aes(yintercept= quantile(Rsi5, 0.9, na.rm= TRUE))) +
+        geom_hline(aes(yintercept= quantile(Rsi5, 0.1, na.rm= TRUE)))
+
+    subplot(p6, p7.1, p7.2, nrows=3, shareX= TRUE, heights= c(0.7, 0.15, 0.15))
+})
+```
+
+
+PErf.Histo
+=======================================================================
+
+Row  {data.height=50}
+-----------------------------------------------------------------------
+
+### Rating Tot.Ret. YTD {.no-padding}
+```{r}
+#p7.1
+```
+
+
+Row  {data.height=50}
+-----------------------------------------------------------------------
+
+### Rating Tot.Ret. YTD {.no-padding}
+```{r}
+#p7.2
+```
+
+
+
+
+Artha Univer
+=======================================================================
+
+### Ranking Abs.Ret.YTD {.no-padding}
+```{r}
+g2[[1]]
+```
+
+### Ranking Tot.Ret. YTD {.no-padding}
+```{r}
+g2[[2]]
+```
+
+### Rating Abs.Ret. Histo {.no-padding}
+
+```{r}
+g1.1[[1]]
+```
+
+### Rating Tot.Ret. Histo {.no-padding}
+```{r}
+g1.1[[2]]
+```
+
+### Ranking Abs.Ret. Histo {.no-padding}
+```{r}
+g2.2[[1]]
+```
+
+### Ranking Tot.Ret. Histo {.no-padding}
+```{r}
+g2.2[[2]]
+```
+
+Dharma Portfolio
+=======================================================================
+
+
+Row {.tabset}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+
+```
+
+### Chart B
+
+```{r}
+
+```
+
+### Chart C
+
+
+
+
+
+Watch List Selection
+=======================================================================
+
+
+Benchmark
+=======================================================================
+
+
+S&P 500
+=======================================================================
+
+
+Bloomberg 500
+=======================================================================
+
+
+

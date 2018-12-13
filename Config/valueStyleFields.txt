@@ -1,0 +1,7 @@
+Book_To_Px_Ratio
+Eqy_Dvd_Yld_Ind
+Pe_Ratio
+Trail_12m_Free_Cash_Flow_Per_Sh
+Sales_To_Price_Ratio
+Ebitda_To_Price
+

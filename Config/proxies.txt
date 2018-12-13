@@ -1,0 +1,8 @@
+ESM7 Index, SPX Index
+SXXP Index, SXXP Index
+BE500 Index, BE500 Index
+SXOM7 Index, SXXP Index
+XS7R GY Equity, SX7R Index
+IUKD LN Equity, UKX Index
+SPY5 LN Equity, SPX Index
+XSMI SW Equity, SMI Index

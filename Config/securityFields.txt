@@ -1,0 +1,10 @@
+Dx194
+Short_Name
+Country
+Crncy
+Primary_Periodicity
+Dvd_Freq
+Industry_Sector
+GICS_Sector_Name
+GICS_Industry_Group_Name
+GICS_Industry_Name

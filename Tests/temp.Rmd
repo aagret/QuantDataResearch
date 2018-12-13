@@ -1,0 +1,27 @@
+---
+title: "DharmaResearch "
+output: 
+  flexdashboard::flex_dashboard:
+    #logo: logo_H.jpg
+    orientation: rows
+    #vertical_layout: scroll
+#runtime: shiny
+---
+
+```{r global, include=FALSE}
+
+
+#### Init ####
+library(flexdashboard)
+library(plotly)
+library(fmsb)
+library(data.table)
+library(quantmod)
+library(knitr)
+
+
+print(getwd())
+
+```
+
+

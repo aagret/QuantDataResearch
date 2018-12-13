@@ -1,0 +1,6 @@
+Net_Debt_To_Ebitda
+Eqy_Dvd_Yld_12m
+Geo_Grow_Dvd_Per_Sh
+Pe_Ratio
+Geo_Grow_Net_Sales
+Dvd_Payout_Ratio

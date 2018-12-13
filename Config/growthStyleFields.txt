@@ -1,0 +1,4 @@
+Return_Com_Eqy
+Net_Income
+Sales_Rev_Turn
+Sales_Growth

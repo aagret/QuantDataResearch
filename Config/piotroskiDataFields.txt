@@ -1,0 +1,9 @@
+Net_Income
+Cf_Cash_From_Oper
+Return_On_Asset
+Lt_Debt_To_Tot_Asset
+Cur_Ratio
+Bs_Sh_Out
+Gross_Margin
+Primary_Periodicity
+Asset_Turnover

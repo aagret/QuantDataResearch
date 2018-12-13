@@ -1,0 +1,62 @@
+
+
+---
+title: <center></center>
+output: 
+- pdf_document 
+- html_document
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+![](Logo_H.jpg)
+<br>
+<br>
+<br>
+<br>
+
+<center>
+## Recent Equity Rating changes
+</center>
+
+
+<br>
+<br>
+<font size=1>
+
+
+```{r, echo=FALSE}
+load("strats.RData")
+source("prod-V-0.9/InitFundData.R")
+changes <- getChanges(7, benchmark)
+knitr::kable(changes, 
+             caption= "1. Rating changes",
+             align="c",
+             digits= 2)
+    
+```
+
+</font>
+
+<br>
+<br>
+
+##### snapshot of prices movements since previous rating
+
+
+# ```{r, fig.width=10, fig.height=20, echo= FALSE, fig.cap= "2. Prices changes since previous Rating"}
+# plotChanges(changes)
+# ```
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+Further info can be obtained on our web site <http://www.dharmaresearch.ch> or by email <info@dharmaresearch.ch>
+
+

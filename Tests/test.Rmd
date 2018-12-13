@@ -1,0 +1,348 @@
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+
+library("knitr")
+workingDir <- normalizePath("..")
+opts_knit$set(root.dir= workingDir)
+setwd(workingDir)
+
+#### Init ####
+library(flexdashboard)
+library(plotly)
+library(fmsb)
+library(data.table)
+library(quantmod)
+
+
+#### load datas ####
+#load("Data/indicators.RData")
+#load("Data/histoPrices.RData")
+load("Data/strats.RData")
+
+source("R/Source/plotRadarFunction.R")
+source("R/Source/getLogReturnFunction.R")
+source("R/Source/getReturnPlotFunction.R")
+source("R/Source/getDatabaseFunction.R")
+source("R/Source/computeFundFieldsFunction.R")
+source("R/Source/computeDailyFieldsFunction.R")
+source("R/Source/changeInftoNAFunction.R")
+source("R/Source/reorderColumnsFunction.R")
+
+database <- getDatabase()
+
+selectInput("secName", label = NULL,
+            choices = (unique(database$Short_Name)),
+            selected = "APPLE INC")
+
+radioButtons("button", label= NULL,
+             c("Ranking"= "Ranking",
+               "Rating" = "Rating"),
+             inline= TRUE)
+
+# render Gauges
+renderGauge({
+    tic <- unique(database[Short_Name == input$secName, Ticker])
+    gauge(round(last(strats$scoring[Ticker == tic, Ranking]) * 100, 2),
+                             min = 0, max = 100, symbol = '%', 
+                             gaugeSectors(success = c(60, 100), 
+                                          warning = c(40, 60), 
+                                          danger = c(0, 40)))
+})
+
+checkboxInput("absolute", "absolute", value= FALSE)
+
+
+    
+ renderTable({
+
+    tic <- unique(database[Short_Name == input$secName, Ticker])
+    
+    if (input$button == "Rating") {
+        db    <- strats$rating
+        field <- "Rating"
+        #db[, Rating:= as.character(Rating)]
+        cut   <- 1:7
+    } else {
+        db    <- strats$scoring
+        field <- "Ranking"
+    }
+    
+    db <- getLogReturn(db[Ticker == tic,])
+
+    
+    if (field == "Ranking") {
+        
+        data1 <- db[,
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= cut(Ranking, seq(0, 1, by= 0.125))]
+        
+        data2 <- db[Date >= Sys.Date() - 365,
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= cut(Ranking, seq(0, 1, by= 0.125))]
+        
+        data3 <- db[Date >= Sys.Date() - 91,
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= cut(Ranking, seq(0, 1, by= 0.125))]
+        
+        setkey(data1, cut)
+        setkey(data2, cut)
+        setkey(data3, cut)
+        
+        data <-  merge(merge(data1, data2, all=TRUE), data3, all=TRUE)
+        
+        setorder(data, -cut)
+        colnames(data) <- c("Ranking", 
+                            "Histo", "Histo", "Histo",
+                            "1Yr", "1Y.SP500", "1Y.BE500",
+                            "90Mths", "90d.SP500", "90d.BE500")
+        
+    } else {
+        
+        data1 <- db[, .(round(sum(SecRet) * 100, 2),
+                        round(sum(SpRet)  * 100, 2), 
+                        round(sum(StoRet) * 100, 2)),
+                    by= Rating]
+        
+        data2 <- db[Date >= Sys.Date() - 365, 
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= Rating]
+        
+        data3 <- db[Date >= Sys.Date() - 91,
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= Rating]
+        
+        setkey(data1, Rating)
+        setkey(data2, Rating)
+        setkey(data3, Rating)
+        
+        data <-  merge(merge(data1, data2, all=TRUE), data3, all=TRUE)
+        
+        colnames(data) <- c("Rating", 
+                            "Histo", "Histo", "Histo",
+                            "1Yr", "1Y.SP500", "1Y.BE500",
+                            "3Mths", "90d.SP500", "90d.BE500")
+        
+        data[, Rating:= as.character(Rating)]
+        
+    }
+
+}, bordered = "xs")       
+
+
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+renderTable({
+
+    tic <- unique(database[Short_Name == input$secName, Ticker])
+    
+    if (input$button == "Rating") {
+        db    <- strats$rating
+        field <- "Rating"
+        #db[, Rating:= as.character(Rating)]
+        cut   <- 1:7
+    } else {
+        db    <- strats$scoring
+        field <- "Ranking"
+    }
+    
+    db <- getLogReturn(db[Ticker == tic,])
+
+    
+    if (field == "Ranking") {
+        
+        data1 <- db[,
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= cut(Ranking, seq(0, 1, by= 0.125))]
+        
+        data2 <- db[Date >= Sys.Date() - 365,
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= cut(Ranking, seq(0, 1, by= 0.125))]
+        
+        data3 <- db[Date >= Sys.Date() - 91,
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= cut(Ranking, seq(0, 1, by= 0.125))]
+        
+        setkey(data1, cut)
+        setkey(data2, cut)
+        setkey(data3, cut)
+        
+        data <-  merge(merge(data1, data2, all=TRUE), data3, all=TRUE)
+        
+        setorder(data, -cut)
+        colnames(data) <- c("Ranking", 
+                            "Histo", "Histo", "Histo",
+                            "1Yr", "1Y.SP500", "1Y.BE500",
+                            "90Mths", "90d.SP500", "90d.BE500")
+        
+    } else {
+        
+        data1 <- db[, .(round(sum(SecRet) * 100, 2),
+                        round(sum(SpRet)  * 100, 2), 
+                        round(sum(StoRet) * 100, 2)),
+                    by= Rating]
+        
+        data2 <- db[Date >= Sys.Date() - 365, 
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= Rating]
+        
+        data3 <- db[Date >= Sys.Date() - 91,
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= Rating]
+        
+        setkey(data1, Rating)
+        setkey(data2, Rating)
+        setkey(data3, Rating)
+        
+        data <-  merge(merge(data1, data2, all=TRUE), data3, all=TRUE)
+        
+        colnames(data) <- c("Rating", 
+                            "Histo", "Histo", "Histo",
+                            "1Yr", "1Y.SP500", "1Y.BE500",
+                            "3Mths", "90d.SP500", "90d.BE500")
+        
+        data[, Rating:= as.character(Rating)]
+        
+    }
+
+}, bordered = "xs")
+```
+
+### Chart C
+
+```{r}
+
+getwd()
+strats$rating[1]
+renderText({print(input$secName)})
+
+renderTable({
+
+    tic <- unique(database[Short_Name == input$secName, Ticker])
+    
+    if (input$button == "Rating") {
+        db    <- strats$rating
+        field <- "Rating"
+        #db[, Rating:= as.character(Rating)]
+        cut   <- 1:7
+    } else {
+        db    <- strats$scoring
+        field <- "Ranking"
+    }
+    
+    db <- getLogReturn(db[Ticker == tic,])
+
+    
+    if (field == "Ranking") {
+        
+        data1 <- db[,
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= cut(Ranking, seq(0, 1, by= 0.125))]
+        
+        data2 <- db[Date >= Sys.Date() - 365,
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= cut(Ranking, seq(0, 1, by= 0.125))]
+        
+        data3 <- db[Date >= Sys.Date() - 91,
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= cut(Ranking, seq(0, 1, by= 0.125))]
+        
+        setkey(data1, cut)
+        setkey(data2, cut)
+        setkey(data3, cut)
+        
+        data <-  merge(merge(data1, data2, all=TRUE), data3, all=TRUE)
+        
+        setorder(data, -cut)
+        colnames(data) <- c("Ranking", 
+                            "Histo", "Histo", "Histo",
+                            "1Yr", "1Y.SP500", "1Y.BE500",
+                            "90Mths", "90d.SP500", "90d.BE500")
+        
+    } else {
+        
+        data1 <- db[, .(round(sum(SecRet) * 100, 2),
+                        round(sum(SpRet)  * 100, 2), 
+                        round(sum(StoRet) * 100, 2)),
+                    by= Rating]
+        
+        data2 <- db[Date >= Sys.Date() - 365, 
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= Rating]
+        
+        data3 <- db[Date >= Sys.Date() - 91,
+                    .(round(sum(SecRet) * 100, 2),
+                      round(sum(SpRet)  * 100, 2), 
+                      round(sum(StoRet) * 100, 2)),
+                    by= Rating]
+        
+        setkey(data1, Rating)
+        setkey(data2, Rating)
+        setkey(data3, Rating)
+        
+        data <-  merge(merge(data1, data2, all=TRUE), data3, all=TRUE)
+        
+        colnames(data) <- c("Rating", 
+                            "Histo", "Histo", "Histo",
+                            "1Yr", "1Y.SP500", "1Y.BE500",
+                            "3Mths", "90d.SP500", "90d.BE500")
+        
+        data[, Rating:= as.character(Rating)]
+        
+    }
+
+}, bordered = "xs")
+
+```
+

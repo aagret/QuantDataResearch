@@ -1,0 +1,7 @@
+
+#### check new month ####
+
+newMonth <- function(db= histoPrices) {
+    
+    month(Sys.Date()) > month(max(histoPrices$Date))
+}
